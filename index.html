@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>$ cat /Max/Tarot — Name Card</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 48px;
+    background: #1a1a1a;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 40px 20px;
+  }
+
+  .label {
+    color: #555;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  /* Card dimensions: 3.5in x 2in at 96dpi = 336px x 192px, scaled up 2x */
+  .card {
+    width: 672px;
+    height: 384px;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ==================== FRONT ==================== */
+  .front {
+    background: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+  }
+
+  .front::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 65, 0.008) 2px,
+      rgba(0, 255, 65, 0.008) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .front-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+
+  .brand-main {
+    color: #00ff41;
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.3), 0 0 30px rgba(0, 255, 65, 0.1);
+    margin-bottom: 6px;
+  }
+
+  .brand-prompt {
+    color: #00aa2a;
+    font-weight: 300;
+  }
+
+  .brand-command {
+    color: #00ff41;
+  }
+
+  .brand-path {
+    color: #00dd38;
+  }
+
+  .cursor {
+    color: #00ff41;
+    animation: blink 1s step-end infinite;
+    font-weight: 300;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .front-sub {
+    color: #00aa2a;
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-top: 20px;
+  }
+
+  /* Corner accents */
+  .corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    z-index: 2;
+  }
+  .corner-tl { top: 16px; left: 16px; border-top: 1px solid rgba(0,255,65,0.15); border-left: 1px solid rgba(0,255,65,0.15); }
+  .corner-tr { top: 16px; right: 16px; border-top: 1px solid rgba(0,255,65,0.15); border-right: 1px solid rgba(0,255,65,0.15); }
+  .corner-bl { bottom: 16px; left: 16px; border-bottom: 1px solid rgba(0,255,65,0.15); border-left: 1px solid rgba(0,255,65,0.15); }
+  .corner-br { bottom: 16px; right: 16px; border-bottom: 1px solid rgba(0,255,65,0.15); border-right: 1px solid rgba(0,255,65,0.15); }
+
+  /* ==================== BACK ==================== */
+  .back {
+    background: #0a0a0a;
+    display: flex;
+    padding: 40px 48px;
+  }
+
+  .back::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 65, 0.008) 2px,
+      rgba(0, 255, 65, 0.008) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .back-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .back-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    position: relative;
+    z-index: 2;
+  }
+
+  .back-name {
+    color: #00ff41;
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-shadow: 0 0 8px rgba(0, 255, 65, 0.2);
+    margin-bottom: 4px;
+  }
+
+  .back-title {
+    color: #00aa2a;
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 28px;
+  }
+
+  .contact-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .contact-prefix {
+    color: #00aa2a;
+    font-size: 11px;
+    font-weight: 300;
+    opacity: 0.5;
+    min-width: 20px;
+    text-align: right;
+  }
+
+  .contact-value {
+    color: #00dd38;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+  }
+
+  .back-brand {
+    color: #00ff41;
+    font-size: 13px;
+    font-weight: 400;
+    opacity: 0.25;
+    text-shadow: 0 0 8px rgba(0, 255, 65, 0.1);
+  }
+
+  .separator {
+    width: 1px;
+    height: 60%;
+    background: rgba(0, 255, 65, 0.1);
+    align-self: center;
+    margin: 0 36px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Print guide lines */
+  .print-note {
+    color: #333;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-align: center;
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- FRONT OF CARD -->
+  <div>
+    <div class="label">front</div>
+    <div class="card front">
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div>
+      <div class="corner corner-br"></div>
+      <div class="front-content">
+        <div class="brand-main">
+          <span class="brand-prompt">$ </span><span class="brand-command">cat </span><span class="brand-path">/Max/Tarot</span><span class="cursor"> █</span>
+        </div>
+        <div class="front-sub">tarot reader</div>
+      </div>
+    </div>
+    <div class="print-note">3.5" × 2" — standard business card</div>
+  </div>
+
+  <!-- BACK OF CARD -->
+  <div>
+    <div class="label">back</div>
+    <div class="card back">
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div>
+      <div class="corner corner-br"></div>
+
+      <div class="back-left">
+        <div class="back-name">Maxim</div>
+        <div class="back-title">Tarot Reader</div>
+        <div class="contact-line">
+          <span class="contact-prefix">IG</span>
+          <span class="contact-value">@cat_max_tarot</span>
+        </div>
+        <div class="contact-line">
+          <span class="contact-prefix">TG</span>
+          <span class="contact-value">@cat_max_tarot</span>
+        </div>
+        <div class="contact-line">
+          <span class="contact-prefix">LN</span>
+          <span class="contact-value">@cat_max_tarot</span>
+        </div>
+        <div class="contact-line">
+          <span class="contact-prefix">YT</span>
+          <span class="contact-value">@catMaxTarot</span>
+        </div>
+      </div>
+
+      <div class="separator"></div>
+
+      <div class="back-right">
+        <div class="back-brand">$ cat<br>/Max/Tarot</div>
+      </div>
+    </div>
+    <div class="print-note">3.5" × 2" — standard business card</div>
+  </div>
+
+</body>
+</html>
