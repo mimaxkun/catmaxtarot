@@ -1,287 +1,466 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>$ cat /Max/Tarot — Name Card</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>$ cat /Max/Tarot</title>
+  <meta name="description" content="Tarot Reader — catMaxTarot">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1a1a25;
+      --green: #4ade80;
+      --green-dim: #22633a;
+      --green-glow: rgba(74, 222, 128, 0.15);
+      --amber: #d4a853;
+      --amber-dim: rgba(212, 168, 83, 0.3);
+      --text: #c8c8d0;
+      --text-dim: #5a5a6e;
+      --purple: #a78bfa;
+    }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  body {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 48px;
-    background: #1a1a1a;
-    font-family: 'JetBrains Mono', monospace;
-    padding: 40px 20px;
-  }
+    html { height: 100%; }
 
-  .label {
-    color: #555;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    text-align: center;
-  }
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
 
-  /* Card dimensions: 3.5in x 2in at 96dpi = 336px x 192px, scaled up 2x */
-  .card {
-    width: 672px;
-    height: 384px;
-    border-radius: 12px;
-    position: relative;
-    overflow: hidden;
-  }
+    /* Subtle grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(74, 222, 128, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74, 222, 128, 0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
 
-  /* ==================== FRONT ==================== */
-  .front {
-    background: #0a0a0a;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 40px;
-  }
+    /* Scanline effect */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.08) 2px,
+        rgba(0, 0, 0, 0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 100;
+    }
 
-  .front::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 255, 65, 0.008) 2px,
-      rgba(0, 255, 65, 0.008) 4px
-    );
-    pointer-events: none;
-    z-index: 1;
-  }
+    .vignette {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+      pointer-events: none;
+      z-index: 99;
+    }
 
-  .front-content {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-  }
+    .card {
+      position: relative;
+      width: min(480px, 92vw);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      opacity: 0;
+      animation: cardIn 0.8s ease-out 0.3s forwards;
+      box-shadow:
+        0 0 80px rgba(74, 222, 128, 0.03),
+        0 20px 60px rgba(0, 0, 0, 0.5);
+    }
 
-  .brand-main {
-    color: #00ff41;
-    font-size: 28px;
-    font-weight: 400;
-    letter-spacing: 1.5px;
-    text-shadow: 0 0 10px rgba(0, 255, 65, 0.3), 0 0 30px rgba(0, 255, 65, 0.1);
-    margin-bottom: 6px;
-  }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-  .brand-prompt {
-    color: #00aa2a;
-    font-weight: 300;
-  }
+    /* Title bar */
+    .titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+    }
 
-  .brand-command {
-    color: #00ff41;
-  }
+    .dots {
+      display: flex;
+      gap: 6px;
+    }
 
-  .brand-path {
-    color: #00dd38;
-  }
+    .dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--border);
+    }
 
-  .cursor {
-    color: #00ff41;
-    animation: blink 1s step-end infinite;
-    font-weight: 300;
-  }
+    .dots span:nth-child(1) { background: #ff5f57; }
+    .dots span:nth-child(2) { background: #ffbd2e; }
+    .dots span:nth-child(3) { background: #28c840; }
 
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-  }
+    .titlebar-text { margin-left: auto; }
 
-  .front-sub {
-    color: #00aa2a;
-    font-size: 11px;
-    font-weight: 300;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    opacity: 0.6;
-    margin-top: 20px;
-  }
+    /* Terminal content */
+    .terminal {
+      padding: 28px 24px 32px;
+    }
 
-  /* Corner accents */
-  .corner {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    z-index: 2;
-  }
-  .corner-tl { top: 16px; left: 16px; border-top: 1px solid rgba(0,255,65,0.15); border-left: 1px solid rgba(0,255,65,0.15); }
-  .corner-tr { top: 16px; right: 16px; border-top: 1px solid rgba(0,255,65,0.15); border-right: 1px solid rgba(0,255,65,0.15); }
-  .corner-bl { bottom: 16px; left: 16px; border-bottom: 1px solid rgba(0,255,65,0.15); border-left: 1px solid rgba(0,255,65,0.15); }
-  .corner-br { bottom: 16px; right: 16px; border-bottom: 1px solid rgba(0,255,65,0.15); border-right: 1px solid rgba(0,255,65,0.15); }
+    .prompt {
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      animation: typeIn 0.4s ease-out 0.8s forwards;
+    }
 
-  /* ==================== BACK ==================== */
-  .back {
-    background: #0a0a0a;
-    display: flex;
-    padding: 40px 48px;
-  }
+    .prompt .path { color: var(--purple); }
 
-  .back::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 255, 65, 0.008) 2px,
-      rgba(0, 255, 65, 0.008) 4px
-    );
-    pointer-events: none;
-    z-index: 1;
-  }
+    @keyframes typeIn {
+      from { opacity: 0; transform: translateX(-5px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
 
-  .back-left {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
-    z-index: 2;
-  }
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background: var(--green);
+      vertical-align: text-bottom;
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+    }
 
-  .back-right {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-end;
-    position: relative;
-    z-index: 2;
-  }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
 
-  .back-name {
-    color: #00ff41;
-    font-size: 22px;
-    font-weight: 500;
-    letter-spacing: 1px;
-    text-shadow: 0 0 8px rgba(0, 255, 65, 0.2);
-    margin-bottom: 4px;
-  }
+    /* Identity block */
+    .identity {
+      margin-top: 28px;
+      padding: 20px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      opacity: 0;
+      animation: fadeUp 0.5s ease-out 1.2s forwards;
+    }
 
-  .back-title {
-    color: #00aa2a;
-    font-size: 11px;
-    font-weight: 300;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    opacity: 0.7;
-    margin-bottom: 28px;
-  }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-  .contact-line {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
+    .identity .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
 
-  .contact-prefix {
-    color: #00aa2a;
-    font-size: 11px;
-    font-weight: 300;
-    opacity: 0.5;
-    min-width: 20px;
-    text-align: right;
-  }
+    .identity .name {
+      font-family: 'Crimson Pro', serif;
+      font-size: 42px;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--amber);
+      letter-spacing: 2px;
+      line-height: 1;
+      text-shadow: 0 0 40px var(--amber-dim);
+    }
 
-  .contact-value {
-    color: #00dd38;
-    font-size: 12px;
-    font-weight: 400;
-    letter-spacing: 0.3px;
-  }
+    .identity .role {
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--text-dim);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
 
-  .back-brand {
-    color: #00ff41;
-    font-size: 13px;
-    font-weight: 400;
-    opacity: 0.25;
-    text-shadow: 0 0 8px rgba(0, 255, 65, 0.1);
-  }
+    /* Tarot symbol */
+    .tarot-sigil {
+      margin: 24px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      animation: fadeUp 0.5s ease-out 1.5s forwards;
+    }
 
-  .separator {
-    width: 1px;
-    height: 60%;
-    background: rgba(0, 255, 65, 0.1);
-    align-self: center;
-    margin: 0 36px;
-    position: relative;
-    z-index: 2;
-  }
-  
-</style>
+    .sigil-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    .sigil-line:last-child {
+      background: linear-gradient(-90deg, var(--border), transparent);
+    }
+
+    .sigil-icons {
+      display: flex;
+      gap: 14px;
+      font-size: 14px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+    }
+
+    /* Social links */
+    .links {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      opacity: 0;
+      animation: fadeUp 0.5s ease-out 1.8s forwards;
+    }
+
+    .link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.015);
+      border: 1px solid transparent;
+      border-radius: 2px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 12px;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .link::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      background: var(--green);
+      transition: width 0.25s ease;
+    }
+
+    .link:hover {
+      border-color: var(--border);
+      background: rgba(74, 222, 128, 0.03);
+    }
+
+    .link:hover::before { width: 2px; }
+    .link:hover .link-icon { color: var(--green); }
+
+    .link-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      color: var(--text-dim);
+      transition: color 0.25s ease;
+    }
+
+    .link-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .link-platform {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+    }
+
+    .link-handle {
+      font-size: 12px;
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      opacity: 0;
+      animation: fadeUp 0.5s ease-out 2.1s forwards;
+    }
+
+    .footer .status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green-glow);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Floating particles */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      background: var(--green);
+      border-radius: 50%;
+      opacity: 0;
+      animation: float linear infinite;
+    }
+
+    @keyframes float {
+      0% { opacity: 0; transform: translateY(100vh) scale(1); }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.2; }
+      100% { opacity: 0; transform: translateY(-10vh) scale(0.5); }
+    }
+
+    /* Mobile */
+    @media (max-width: 500px) {
+      .terminal { padding: 20px 16px 24px; }
+      .identity .name { font-size: 32px; }
+      .links { grid-template-columns: 1fr; }
+      .link { padding: 12px 14px; }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- FRONT OF CARD -->
-  <div>
-    <div class="card front">
-      <div class="corner corner-tl"></div>
-      <div class="corner corner-tr"></div>
-      <div class="corner corner-bl"></div>
-      <div class="corner corner-br"></div>
-      <div class="front-content">
-        <div class="brand-main">
-          <span class="brand-prompt">$ </span><span class="brand-command">cat </span><span class="brand-path">/Max/Tarot</span><span class="cursor"> █</span>
+  <div class="vignette"></div>
+
+  <div class="particles" id="particles"></div>
+
+  <div class="card">
+    <div class="titlebar">
+      <div class="dots">
+        <span></span><span></span><span></span>
+      </div>
+      <span class="titlebar-text">zsh — 80×24</span>
+    </div>
+
+    <div class="terminal">
+      <div class="prompt">
+        <span style="color: var(--text-dim)">~</span> <span class="path">$</span> cat <span class="path">/Max/Tarot</span><span class="cursor"></span>
+      </div>
+
+      <div class="identity">
+        <div class="label">tarot reader</div>
+        <div class="name">cat /Max/Tarot</div>
+        <div class="role">⚑ readings · guidance · insight</div>
+      </div>
+
+      <div class="tarot-sigil">
+        <div class="sigil-line"></div>
+        <div class="sigil-icons">♠ ♥ ♦ ♣</div>
+        <div class="sigil-line"></div>
+      </div>
+
+      <div class="links">
+        <a class="link" href="https://www.instagram.com/cat_max_tarot" target="_blank" rel="noopener">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          <div class="link-info">
+            <span class="link-platform">Instagram</span>
+            <span class="link-handle">@cat_max_tarot</span>
+          </div>
+        </a>
+
+        <a class="link" href="https://t.me/cat_max_tarot" target="_blank" rel="noopener">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.2 4.6L2.5 11.1c-.7.3-.7.9 0 1.1l4.8 1.5 1.9 5.9c.2.5.7.5 1 .2l2.7-2.2 5.3 3.9c.5.4 1.1.1 1.2-.5L22.3 5.7c.2-.8-.4-1.4-1.1-1.1z"/><path d="M9.3 13.7l8.5-7.5"/></svg>
+          <div class="link-info">
+            <span class="link-platform">Telegram</span>
+            <span class="link-handle">@cat_max_tarot</span>
+          </div>
+        </a>
+
+        <a class="link" href="https://line.me/R/ti/p/@cat_max_tarot" target="_blank" rel="noopener">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 5.82 2 10.5c0 3.26 2.36 6.1 5.88 7.54-.08.7-.5 2.6-.57 3 0 0-.01.1.05.14.06.03.13.01.13.01.18-.02 2.07-1.36 2.93-2 .51.07 1.04.11 1.58.11 5.52 0 10-3.82 10-8.5S17.52 2 12 2z"/></svg>
+          <div class="link-info">
+            <span class="link-platform">LINE</span>
+            <span class="link-handle">@cat_max_tarot</span>
+          </div>
+        </a>
+
+        <a class="link" href="https://www.youtube.com/@catMaxTarot" target="_blank" rel="noopener">
+          <svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="4"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>
+          <div class="link-info">
+            <span class="link-platform">YouTube</span>
+            <span class="link-handle">@catMaxTarot</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="footer">
+        <div class="status">
+          <div class="status-dot"></div>
+          <span>available for readings</span>
         </div>
-        <div class="front-sub">tarot reader</div>
+        <span>v1.0</span>
       </div>
     </div>
   </div>
 
-  <!-- BACK OF CARD -->
-  <div>
-    <div class="card back">
-      <div class="corner corner-tl"></div>
-      <div class="corner corner-tr"></div>
-      <div class="corner corner-bl"></div>
-      <div class="corner corner-br"></div>
-
-      <div class="back-left">
-        <div class="back-name">Maxim</div>
-        <div class="back-title">Tarot Reader</div>
-        <div class="contact-line">
-          <span class="contact-prefix">IG</span>
-          <span class="contact-value">@cat_max_tarot</span>
-        </div>
-        <div class="contact-line">
-          <span class="contact-prefix">TG</span>
-          <span class="contact-value">@cat_max_tarot</span>
-        </div>
-        <div class="contact-line">
-          <span class="contact-prefix">LN</span>
-          <span class="contact-value">@cat_max_tarot</span>
-        </div>
-        <div class="contact-line">
-          <span class="contact-prefix">YT</span>
-          <span class="contact-value">@catMaxTarot</span>
-        </div>
-      </div>
-
-      <div class="separator"></div>
-
-      <div class="back-right">
-        <div class="back-brand">$ cat<br>/Max/Tarot</div>
-      </div>
-    </div>
-  </div>
-
+  <script>
+    // Floating particles
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDuration = (8 + Math.random() * 12) + 's';
+      p.style.animationDelay = (Math.random() * 10) + 's';
+      p.style.width = p.style.height = (1 + Math.random() * 1.5) + 'px';
+      container.appendChild(p);
+    }
+  </script>
 </body>
 </html>
